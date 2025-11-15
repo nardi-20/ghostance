@@ -2,10 +2,11 @@
 
 "keep your person close, even from miles away"
 
-A project for Technica 2025. Chrome extension that lets long-distance couples send tiny affectionate “pings,” love notes, status updates, or little floating ghosts/cats across the screen.
+A project for Technica 2025. Chrome extension that lets long-distance couples send tiny affectionate “pings,” love notes, status updates, or little floating ghosts/cats across the screen. Users can choose between a ghost or a cat based on their preference.
 
 
 Some planned features:
+  - Wake and sleep icon based on usage (send the ghost to the gravestone when clicked/gravestone breaks to let ghost escape)
   - Send a quick “boo!” or “meow!” notification to your partner
   - Floating animated cat/ghost pops onto their screen
   - Quick love notes
