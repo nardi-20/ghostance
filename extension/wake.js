@@ -6,7 +6,7 @@ const untilFound = document.querySelector("#until-found-ghost");
 home.addEventListener('click', function() {
      message.textContent = 'Yawwwwnnnn';
      aviable = true 
-     if (aviabile){
+     if (aviable){
           //pop ghost up screen 
           untilFound.addEventListener(
                "beforematch",
