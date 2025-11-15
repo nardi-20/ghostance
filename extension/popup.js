@@ -61,43 +61,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // --- 4. Dressing Room / Ghost Outfit Logic ---
+    // Outfit changes
     const ghostImg = document.getElementById("ghost");
 
     let currentHat = null;
     let currentGlasses = null;
 
     function updateGhostImage() {
-        // Start with the base ghost image
-        let src = "icons/ghost.png";
+        let parts = ["ghost"];
 
-        // Build the source string based on selected accessories
-        if (currentHat && currentGlasses) {
-            src = `icons/ghost+${currentHat}+${currentGlasses}.png`;
-        } else if (currentHat) {
-            src = `icons/ghost+${currentHat}.png`;
-        } else if (currentGlasses) {
-            src = `icons/ghost+${currentGlasses}.png`;
-        }
+        if (currentHat) parts.push(currentHat);
+        if (currentGlasses) parts.push(currentGlasses);
 
-        ghostImg.src = src;
+        ghostImg.src = "icons/" + parts.join("+") + ".png";
     }
 
-    document.querySelectorAll(".dress-item").forEach(btn => {
-        btn.addEventListener("click", () => {
-            // NOTE: Requires data-type="hat" or data-type="glasses" on the HTML button
-            const type = btn.dataset.type; 
-            const id = btn.dataset.id; // e.g., hat1, glasses1
+    document.querySelectorAll(".dress-item").forEach(button => {
+        button.addEventListener("click", () => {
+            const type = button.dataset.type;
+            const id = button.dataset.id;
 
             if (type === "hat") {
-                currentHat = (currentHat === id) ? null : id; // Toggle logic
-            } else if (type === "glasses") {
-                currentGlasses = (currentGlasses === id) ? null : id; // Toggle logic
+                currentHat = (currentHat === id ? null : id);
             }
-
+            if (type === "glasses") {
+                currentGlasses = (currentGlasses === id ? null : id);
+            }
             updateGhostImage();
         });
     });
-    
+
     // --- 5. Menu Button Toggle Logic (Master Logic) ---
 
     // Function to set up the open/close toggle behavior for a single button
