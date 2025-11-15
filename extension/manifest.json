@@ -6,18 +6,17 @@
 
     "action": {
         "default_popup": "popup/popup.html",
-
-        "default icon": {
-            "16": "assets/icon/ghost.16.png",
-            "32": "assets/icon/ghost.32.png",
-            "64": "assets/icon/ghost.64.png"
+        "default_title": "justABooAway",
+        "default_icons": {
+            "16": "extension/assets/icons/ghost_temp.png"
         }
     },
 
     "icons": {
-        "16": "assets/icon/ghost.16.png",
-        "32": "assets/icon/ghost.32.png",
-        "64": "assets/icon/ghost.64.png" 
+        "16": "extension/assets/icons/graveyard_icon.png",
+        "32": "extension/assets/icons/haunting_icon.png",
+        "48": "extension/assets/icons/wand_icon.png", 
+        "64": "extension/assets/icons/dressing_room.png"
     },
 
     "background": {
@@ -29,7 +28,7 @@
         "notifications"
     ],
 
-    "host permissions": [
+    "host_permissions": [
         "https://*/",
         "http://*/"
     ]
