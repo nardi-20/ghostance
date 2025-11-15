@@ -5,14 +5,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const menu = document.getElementById("menu");
 
     gravestone.addEventListener("click", () => {
-        ghostContainer.classList.remove("hidden");
-        ghost.classList.add("shake", "glow", "float");
+        if (!isGhostVisible) {
+            // WAKE UP
+            if (typeof wake === 'function') {
+                wake();
+            }
+            // ... UI changes to SHOW ghost ...
 
-        setTimeout(() => {
-            ghost.classList.remove("shake");
-        }, 500);
-
-        menu.classList.remove("hidden");
+        } else {
+            // GO TO SLEEP
+            if (typeof sleep === 'function') {
+                sleep(); // Call the dedicated sleep function
+            }
+        }
     });
 
     // Menu button functionality
