@@ -1,44 +1,76 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // --- 1. Variable Declarations & Selectors ---
     const gravestone = document.getElementById("gravestone");
-    const popupContent = document.getElementById("popup-content");
+    const ghostContainer = document.getElementById("ghost-container"); 
     const ghost = document.getElementById("ghost");
     const menu = document.getElementById("menu");
+    const ALL_MODAL_SELECTORS = ".mailbox-background, .dressing-background, .gifts-background, .haunt-background";
 
-    // Click gravestone to show ghost and menu
-    gravestone.addEventListener("click", () => {
-        const isGhostVisible = !popupContent.classList.contains("hidden");
-        if (!isGhostVisible) {
-            if (typeof wake === 'function') {
-                wake();
-            }
-        } else {
-            // GO TO SLEEP
-            if (typeof sleep === 'function') {
-                sleep();
-            }
-        }
-    });
 
-    // Open a modal and close others
+    // --- 2. Helper Functions for Modals ---
+
+    // Closes ALL modals by selecting every element with a background class
+    function closeAllModals() {
+        document.querySelectorAll(ALL_MODAL_SELECTORS)
+            .forEach(m => m.classList.add("hidden"));
+    }
+
+    // Opens a modal: closes all others first, then shows the target modal
     function openModal(modalId) {
-        document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden"));
+        closeAllModals(); 
         document.getElementById(modalId).classList.remove("hidden");
     }
 
-    // Close all modals
-    function closeAllModals() {
-        document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden"));
-    }
 
-    // Outfit changes
+    // --- 3. Gravestone Toggle Logic ---
+    gravestone.addEventListener("click", () => {
+        // Check visibility of the ghost's container (assuming it's what toggles the state)
+        const isGhostVisible = !ghostContainer.classList.contains("hidden");
+
+        if (!isGhostVisible) {
+            // ACTION: WAKE UP
+            if (typeof wake === 'function') {
+                wake();
+            }
+            
+            // UI Changes: SHOW ghost and menu
+            ghostContainer.classList.remove("hidden");
+            menu.classList.remove("hidden");
+            
+            // Apply animations
+            ghost.classList.add("shake", "glow", "float");
+            setTimeout(() => {
+                ghost.classList.remove("shake");
+            }, 500);
+
+        } else {
+            // ACTION: GO TO SLEEP
+            if (typeof sleep === 'function') {
+                sleep();
+            }
+            
+            // UI Changes: HIDE ghost and menu
+            closeAllModals(); // Close any open modals first
+            ghostContainer.classList.add("hidden");
+            menu.classList.add("hidden");
+            
+            // Remove lingering animation classes
+            ghost.classList.remove("glow", "float");
+        }
+    });
+
+
+    // --- 4. Dressing Room / Ghost Outfit Logic ---
     const ghostImg = document.getElementById("ghost");
 
     let currentHat = null;
     let currentGlasses = null;
 
     function updateGhostImage() {
+        // Start with the base ghost image
         let src = "icons/ghost.png";
 
+        // Build the source string based on selected accessories
         if (currentHat && currentGlasses) {
             src = `icons/ghost+${currentHat}+${currentGlasses}.png`;
         } else if (currentHat) {
@@ -52,25 +84,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".dress-item").forEach(btn => {
         btn.addEventListener("click", () => {
-            const type = btn.dataset.type;
-            const id = btn.dataset.id;
+            // NOTE: Requires data-type="hat" or data-type="glasses" on the HTML button
+            const type = btn.dataset.type; 
+            const id = btn.dataset.id; // e.g., hat1, glasses1
 
             if (type === "hat") {
-                currentHat = id;
+                currentHat = (currentHat === id) ? null : id; // Toggle logic
             } else if (type === "glasses") {
-                currentGlasses = id;
+                currentGlasses = (currentGlasses === id) ? null : id; // Toggle logic
             }
 
             updateGhostImage();
         });
     });
     
-    // Menu button event listeners
-    document.getElementById("mailbox").addEventListener("click", () => openModal("mailbox-modal"));
-    document.getElementById("dressing").addEventListener("click", () => openModal("dressing-modal"));
-    document.getElementById("gifts").addEventListener("click", () => openModal("gifts-modal"));
-    document.getElementById("haunt").addEventListener("click", () => openModal("haunt-modal"));
+    // --- 5. Menu Button Toggle Logic (Master Logic) ---
 
-    // Close buttons
+    // Function to set up the open/close toggle behavior for a single button
+    function setupModalToggle(buttonId, modalId) {
+        document.getElementById(buttonId).addEventListener("click", () => {
+            const modal = document.getElementById(modalId);
+            
+            // Check if THIS specific modal is currently open
+            const isAlreadyOpen = !modal.classList.contains("hidden"); 
+
+            if (isAlreadyOpen) {
+                // If it's open, CLOSE it.
+                modal.classList.add("hidden");
+            } else {
+                // If it's closed, OPEN it (uses openModal, which closes all others first)
+                openModal(modalId);
+            }
+        });
+    }
+
+    // Attach the toggle logic to all your menu buttons
+    setupModalToggle("mailbox", "mailbox-modal");
+    setupModalToggle("dressing", "dressing-modal");
+    setupModalToggle("gifts", "gifts-modal");
+    setupModalToggle("haunt", "haunt-modal");
+
+
+    // --- 6. Close Buttons (Generalized Logic) ---
+    // When any button with the class 'close-btn' is clicked, it closes ALL modals.
     document.querySelectorAll(".close-btn").forEach(btn => btn.addEventListener("click", closeAllModals));
 });
