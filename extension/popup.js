@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     // Menu button event listeners
     document.getElementById("mailbox").addEventListener("click", () => openModal("mailbox-modal"));
     document.getElementById("dressing").addEventListener("click", () => openModal("dressing-modal"));
