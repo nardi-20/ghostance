@@ -5,16 +5,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const menu = document.getElementById("menu");
 
     gravestone.addEventListener("click", () => {
-        ghostContainer.classList.remove("hidden"); // Show ghost container
-
-        ghost.classList.add("shake", "glow"); // Trigger shake and glow animations
+        ghostContainer.classList.remove("hidden");
+        ghost.classList.add("shake", "glow", "float");
 
         setTimeout(() => {
-            ghost.classList.remove("shake"); // Remove shake after animation ends
+            ghost.classList.remove("shake");
         }, 500);
 
-        ghost.classList.add("float"); // Start floating animation
+        menu.classList.remove("hidden");
+    });
 
-        menu.classList.remove("hidden"); // Show menu
+    // Menu button functionality
+
+    // Mailbox
+    document.getElementById("mailbox").addEventListener("click", () => {
+        // TODO: open mailbox modal (implement real UI here)
+        console.log("Mailbox opened");
+        // TODO: show messages, pending mail, ghost delivery animation
+    });
+
+    // Dressing Station
+    document.getElementById("dressing").addEventListener("click", () => {
+        console.log("Dressing Station opened");
+        // TODO: open ghost customization panel (hats, clothes, etc.)
+    });
+
+    // Mail Gifts
+    document.getElementById("gifts").addEventListener("click", () => {
+        console.log("Mail Gift clicked");
+        // TODO: send gift animation or interaction
+    });
+
+    // Haunt
+    document.getElementById("haunt").addEventListener("click", () => {
+        console.log("Haunt clicked");
+        // TODO: ghost chases mouse, scary messages, sound effects
     });
 });
