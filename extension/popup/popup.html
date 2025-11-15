@@ -1,31 +1,42 @@
 <!--
 Main html page for chrome extension
 -->
+
+<!--
+Main html page for chrome extension
+-->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device=width, initial-scale=1.0" />
-    <title> justABooAway </title>
-    <link rel="stylesheet" href="popup.css" />
+    <meta charset="UTF-8">
+    <title> JustABooAway </title>
+    <link rel="stylesheet" href="popup.css">
 </head>
-
 <body>
-    <div class="container">
-        <h1 id="title"> justABooAway </h1>
+    <!-- Always-visible gravestone -->
+    <div id="gravestone-container"> 
+        <img id="gravestone" src="icons/gravestone.png" alt="Gravestone">
+    </div>
 
-        <div class="theme-section">
-            <p class="label">Current Theme:</p>
-            <span id="currentTheme" class="theme-label">ghost</span>
-            <button id="toggleTheme" class="theme-button">Switch Theme</button>
-        </div>
+    <!-- Ghost placeholder (hidden until triggered) -->
+    <div id="ghost-container" class="hidden">
+        <img id="ghost" src="icons/ghost.png" alt="Ghost">
+    </div>
 
-        <hr />
-
-        <div class="send-section">
-            <button id="sendBoo" class="send-button"> Send a Boo </button>
-        </div>
+    <!-- Menu (hidden by default) -->
+    <div id="menu" class="hidden">
+        <button id="mailbox" class="menu-btn">
+            <img src="icons/letter.png" alt="Mailbox">
+        </button>
+        <button id="dressing" class="menu-btn">
+            <img src="icons/spider-bow.png" alt="Dressing Station">
+        </button>
+        <button id="gifts" class="menu-btn">
+            <img src="icons/wand.png" alt="Mail Gifts">
+        </button>
+        <button id="haunt" class="menu-btn">
+            <img src="icons/skull.png" alt="Haunt">
+        </button>
     </div>
 
     <script src="popup.js"></script>
