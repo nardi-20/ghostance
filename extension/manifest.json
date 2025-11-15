@@ -6,15 +6,15 @@
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "16": "icons/gravestone.png",
-        "48": "icons/gravestone.png",
-        "128": "icons/gravestone.png"
+        "16": "assets/icons/gravestone.png",
+        "48": "assets/icons/gravestone.png",
+        "128": "assets/icons/gravestone.png"
       }
     },
     "icons": {
-      "16": "icons/gravestone.png",
-      "48": "icons/gravestone.png",
-      "128": "icons/gravestone.png"
+      "16": "assets/icons/gravestone.png",
+      "48": "assets/icons/gravestone.png",
+      "128": "assets/icons/gravestone.png"
     },
     "permissions": [
       "storage",
