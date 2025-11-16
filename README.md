@@ -2,7 +2,7 @@
 
 ## "Keep Your Person Close, Even From Miles Away"
 
-A project for **Technica 2025**: a Chrome extension that lets long-distance couples send tiny affectionate “pings,” love notes, status updates, or little floating ghosts across the screen.
+A project for **Technica 2025**: a Chrome extension that lets long-distance friendships send tiny affectionate “pings,” love notes, status updates, or little floating ghosts across the screen.
 
 ---
 
