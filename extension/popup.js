@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- 1. Variable Declarations & Selectors ---
     const gravestone = document.getElementById("gravestone");
-    const ghostContainer = document.getElementById("ghost-container");
+    const ghostContainer = document.getElementById("ghost-container"); 
     const ghostVisContainer = document.getElementById("popup-content"); // Visibility container
     const ghostImg = document.getElementById("ghost"); // Image element
     const menu = document.getElementById("menu");
@@ -9,30 +9,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // --- 2. Helper Functions for Modals ---
-
     function closeAllModals() {
         document.querySelectorAll(ALL_MODAL_SELECTORS)
             .forEach(m => m.classList.add("hidden"));
     }
 
     function openModal(modalId) {
-        closeAllModals();
+        closeAllModals(); 
         document.getElementById(modalId).classList.remove("hidden");
     }
 
-    // Function to set up the open/close toggle behavior for a single button
     function setupModalToggle(buttonId, modalId) {
         document.getElementById(buttonId).addEventListener("click", () => {
             const modal = document.getElementById(modalId);
-
-            // Check if THIS specific modal is currently open (NOT hidden)
-            const isAlreadyOpen = !modal.classList.contains("hidden");
+            const isAlreadyOpen = !modal.classList.contains("hidden"); 
 
             if (isAlreadyOpen) {
-                // If it's open, CLOSE it.
                 modal.classList.add("hidden");
             } else {
-                // If it's closed, OPEN it (uses openModal, which closes all others first)
                 openModal(modalId);
             }
         });
@@ -53,7 +47,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 sleep(ghostVisContainer, menu);
             }
         }
-        // 🛑 REMOVED: menu.classList.add("hidden"); 
+    });
+
+    // --- Ghost Click Toggle ---
+    ghostImg.addEventListener("click", () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const tab = tabs[0];
+            if (!tab) return;
+
+            chrome.tabs.sendMessage(tab.id, { action: "toggleGhost" });
+        });
     });
 
 
@@ -84,9 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateGhostImage();
         });
     });
-
+    
     // --- 5. Menu Button Toggle Logic (FIXED) ---
-    // Now use the setupModalToggle function for all menu buttons
     setupModalToggle("mailbox", "mailbox-modal");
     setupModalToggle("dressing", "dressing-modal");
     setupModalToggle("gifts", "gifts-modal");
@@ -95,8 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close buttons
     document.querySelectorAll(".close-btn").forEach(btn => btn.addEventListener("click", closeAllModals));
 
-    // --- 6. Playing sounds when hovering over menu options
-    // Create audio objects
+    // --- 6. Playing sounds when hovering over menu options ---
     const sounds = {
         mailbox: new Audio("sounds/mail.mp3"),
         dressing: new Audio("sounds/dresser.mp3"),
@@ -106,18 +107,75 @@ document.addEventListener("DOMContentLoaded", () => {
         ghost: new Audio("sounds/ghost.mp3")
     };
 
-    // Play sound on hover, stop on leave
     Object.keys(sounds).forEach(id => {
         const btn = document.getElementById(id);
 
         btn.addEventListener("mouseenter", () => {
-            sounds[id].currentTime = 0; // restart if already playing
+            sounds[id].currentTime = 0; 
             sounds[id].play();
         });
 
         btn.addEventListener("mouseleave", () => {
             sounds[id].pause();
-            sounds[id].currentTime = 0; // reset to start
+            sounds[id].currentTime = 0; 
         });
     });
+
+    // --- 7. Gemini Gift Generation Logic ---
+    const giftInput = document.getElementById("gift-input");
+    const generateButton = document.getElementById("generate-btn");
+    const giftOutput = document.getElementById("gift-output");
+
+    function displayGift(status, giftHtml) {
+        switch (status) {
+            case "loading":
+                giftOutput.textContent = "Summoning spooky magic...";
+                break;
+            case "success":
+                giftOutput.innerHTML = `<h4>✨ Gift Generated! ✨</h4><p>${giftHtml}</p>`;
+                break;
+            case "error":
+                giftOutput.textContent = giftHtml; 
+                break;
+            default:
+                giftOutput.textContent = "Enter a prompt to generate a gift!";
+        }
+    }
+
+    chrome.storage.local.get(["giftStatus", "lastGift"], (result) => {
+        if (result.giftStatus) {
+            displayGift(result.giftStatus, result.lastGift);
+        } else {
+            displayGift("default");
+        }
+    });
+
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === "local" && changes.giftStatus) {
+            chrome.storage.local.get(["giftStatus", "lastGift"], (result) => {
+                displayGift(result.giftStatus, result.lastGift);
+            });
+        }
+    });
+
+
+    if (generateButton) {
+        generateButton.addEventListener("click", () => {
+            const userPrompt = giftInput.value.trim();
+            if (!userPrompt) {
+                giftOutput.textContent = "Please enter a prompt!";
+                return;
+            }
+
+            const fullPrompt = `You are a friendly, slightly spooky ghost. Generate a creative gift based on this user request: "${userPrompt}". Keep the tone light and fun.`;
+
+            chrome.runtime.sendMessage({
+                action: "generateGift",
+                prompt: fullPrompt
+            });
+
+            displayGift("loading");
+        });
+    }
+    
 });
