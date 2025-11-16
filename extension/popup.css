@@ -12,6 +12,44 @@ body {
     overflow: visible;
 }
 
+/* Increase header size for mailbox, dressing station, and gifts */
+.mailbox-background h3,
+.dressing-background h3,
+.gifts-background h3 {
+    font-size: 2.5em; /* bigger titles */
+}
+
+/* Increase paragraph/text size */
+.mailbox-background p,
+.dressing-background p,
+.gifts-background p {
+    font-size: 1.3em; /* bigger descriptive text */
+}
+
+/* Reduce spacing for mailbox, dressing station, and gifts modals */
+.mailbox-background .modal-content,
+.dressing-background .modal-content,
+.gifts-background .modal-content {
+    gap: 8px; /* smaller gap between elements inside modal */
+}
+
+/* Reduce space around headers */
+.mailbox-background h3,
+.dressing-background h3,
+.gifts-background h3 {
+    margin-bottom: 4px; /* smaller bottom margin */
+    line-height: 1.2;   /* tighter line spacing */
+}
+
+/* Reduce space around paragraphs */
+.mailbox-background p,
+.dressing-background p,
+.gifts-background p {
+    margin-top: 0;       /* remove extra top margin */
+    margin-bottom: 4px;  /* smaller bottom margin */
+    line-height: 1.3;    /* tighter line spacing */
+}
+
 /* === HIDDEN CLASS === */
 .hidden {
     display: none !important;
