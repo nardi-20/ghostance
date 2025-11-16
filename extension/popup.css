@@ -311,21 +311,31 @@ body {
 }
 
 #haunt-modal {
-    /* Override background and border */
     background: #282828;
     border: 2px solid #8B0000;
     box-shadow: 0 0 20px #8B0000;
 
-    /* 💡 ADDED: Centering logic moved here */
     position: fixed;
-    top: 70%;
-    left: 50%;
+    top: 70%;              /* Center vertically */
+    left: 50%;             /* Center horizontally */
     transform: translate(-50%, -50%);
-    z-index: 200; /* Higher z-index */
-    margin: 0; /* Remove the margin */
-    
-    /* Use the new animation */
-    animation-name: haunt-modal-pop; 
+    z-index: 200;
+    margin: 0;
+
+    width: 90%;            /* Expand to most of the popup width */
+    max-width: 300px;      /* Optional: keeps it from getting too wide */
+    min-height: 100px;     /* Ensures there’s always some height */
+    padding: 20px;
+
+    border-radius: 15px;
+    text-align: center;
+
+    animation-name: haunt-modal-pop;
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+
+    overflow: auto;        /* Allow scrolling if content is very tall */
+    box-sizing: border-box;
 }
 
 #haunt-modal h3 {

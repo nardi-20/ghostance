@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 2. Change to scary image & shake
         // Make sure "hgl042h.jpg" is inside your "icons" folder!
-        ghostImg.src = "icons/hgl042h.jpg"; 
+        ghostImg.src = "icons/hgl042h.jpg";
         ghostImg.classList.add("shake"); // Your CSS file already has .shake
 
         // 3. After the shake (0.5s from your CSS), remove class and revert image
@@ -53,7 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 3. Helper Functions for Modals ---
     function closeAllModals() {
         document.querySelectorAll(ALL_MODAL_SELECTORS)
-            .forEach(m => m.classList.add("hidden"));
+            .forEach(m => {
+                // Only hide elements that are actual modals
+                if (!m.classList.contains('ghost-container') && !m.id.includes('popup-content')) {
+                    m.classList.add("hidden");
+                }
+            });
     }
 
     function openModal(modalId) {
@@ -168,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Logic for the "Start Haunting" BUTTON (inside the modal)
     if (startHauntBtn) {
         startHauntBtn.addEventListener("click", () => {
-            
+
             // 💡 UPDATED: Send message to background to broadcast the haunt
             // This tells your background.js script to send the haunt
             // to your paired friend.
@@ -308,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
-    
+
     // --- 11. Listen for Haunt from Background Script ---
     // This listens for the message from your background.js
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
