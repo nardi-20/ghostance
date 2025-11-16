@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 giftOutput.textContent = giftHtml;
                 break;
             default:
-                giftOutput.textContent = "Enter a prompt to generate a gift!";
+                giftOutput.textContent = "";
         }
     }
 
