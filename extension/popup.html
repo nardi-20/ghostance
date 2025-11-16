@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifier&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="popup.css">
 </head>
 
@@ -46,7 +46,10 @@
     <div id="mailbox-modal" class="modal mailbox-background hidden">
         <div class="modal-content">
             <h3> Mailbox </h3>
-            <p> No messages yet! </p>
+            <div id="modal-chat-display"
+                style="height:150px; overflow-y:auto; border:1px solid #ccc; padding:5px; margin-bottom:8px;"></div>
+            <input type="text" id="modal-chat-input" placeholder="Type a message..." style="width:70%;">
+            <button id="modal-send-btn">Send</button>
             <button class="close-btn">Close</button>
         </div>
     </div>

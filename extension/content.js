@@ -21,7 +21,7 @@ function connectSocket(pairCode) {
     // Avoid duplicate connections
     if (socket &&
         (socket.readyState === WebSocket.OPEN ||
-         socket.readyState === WebSocket.CONNECTING)) {
+            socket.readyState === WebSocket.CONNECTING)) {
         return;
     }
 
@@ -52,9 +52,9 @@ function connectSocket(pairCode) {
                 addGhost(false);      // UI only
             } else if (data.action === "hide-ghost") {
                 removeGhost(false);   // UI only
-                
-            // 💡 --- ADDED THIS SECTION ---
-            // 3. We receive a haunt from our friend
+
+                // 💡 --- ADDED THIS SECTION ---
+                // 3. We receive a haunt from our friend
             } else if (data.action === "haunt-action") {
                 console.log("[JustABooAway] BOO! We've been haunted!");
                 // Tell the popup (if open) and service-worker (if closed)
@@ -62,6 +62,16 @@ function connectSocket(pairCode) {
             }
             // 💡 --- END OF ADDED SECTION ---
 
+        }
+
+        // Adding messaging function
+        if (data.type === "chat-message") {
+            console.log("[JustABooAway] Received chat-message:", data.payload);
+
+            chrome.runtime.sendMessage({
+                action: "receiveMessage",
+                message: data.payload
+            });
         }
     });
 
@@ -78,6 +88,30 @@ function connectSocket(pairCode) {
         }, 5000);
     });
 }
+
+// ===========================
+//  Messaging between users
+// ===========================
+
+// NEW: Send a chat message to a paired user
+function sendMessageToPair(messageText) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.warn("[JustABooAway] Cannot send message, socket not open");
+        return;
+    }
+
+    const msg = {
+        type: "chat-message",
+        payload: {
+            text: messageText,
+            timestamp: Date.now()
+        }
+    };
+    socket.send(JSON.stringify(msg));
+    console.log("[JustABooAway] Sent chat-message:", msg);
+}
+// END NEW continue existing pet-action / haunt-action handling
+
 
 function sendPetAction(action, payload = {}) {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -107,8 +141,8 @@ function addGhost(broadcast = true) {
 
     ghost.style.position = "fixed";
     ghost.style.bottom = "20px";
-    ghost.style.right  = "20px";
-    ghost.style.width  = "120px";
+    ghost.style.right = "20px";
+    ghost.style.width = "120px";
     ghost.style.zIndex = "999999999";
     ghost.style.pointerEvents = "none";
 
@@ -156,14 +190,18 @@ chrome.runtime.onMessage.addListener((msg) => {
             connectSocket(currentPairCode);
         }
 
-    // 💡 --- ADDED THIS SECTION ---
-    // 1. Popup told us to "Start Haunting"
+        // 💡 --- ADDED THIS SECTION ---
+        // 1. Popup told us to "Start Haunting"
     } else if (msg.action === "startHaunting") {
         console.log("[JustABooAway] Sending haunt-action to friend...");
         // 2. We send the new "haunt-action" message over the WebSocket
         sendPetAction("haunt-action");
     }
     // 💡 --- END OF ADDED SECTION ---
+    // --- NEW: Send chat message from popup ---
+    else if (msg.action === "sendMessage" && msg.text) {
+        sendMessageToPair(msg.text);
+    }
 });
 
 // =====================

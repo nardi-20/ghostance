@@ -108,8 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ghostImg.addEventListener("click", () => {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                 const tab = tabs[0];
-                if (!tab) return;
-
+                if (!tab) {
+                    return;
+                }
                 chrome.tabs.sendMessage(tab.id, { action: "toggleGhost" });
             });
         });
@@ -291,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 pairCodeInput.value = res.pairCode;
                 console.log("[JustABooAway] Loaded stored pairCode:", res.pairCode);
             }
-        });
+        })
 
         // Save code and tell the content script to reconnect
         savePairCodeBtn.addEventListener("click", () => {
@@ -302,17 +303,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             chrome.storage.local.set({ pairCode: code }, () => {
                 console.log("[JustABooAway] Saved pairing code:", code);
-                // Tell the active tab to reconnect with this new code
-                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                    if (!tabs[0]) return;
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        action: "setPairCode",
-                        code,
-                    });
+                // Tell the service worker to reconnect with this new code
+                chrome.runtime.sendMessage({
+                    action: "setPairCode",
+                    code: code
                 });
             });
         });
-    }
+    };
 
     // --- 11. Listen for Haunt from Background Script ---
     // This listens for the message from your background.js
@@ -323,4 +321,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // --- 12. Listen for Messaging from
+    document.addEventListener("DOMContentLoaded", () => {
+        const input = document.getElementById("modal-chat-input");
+        const chatDisplay = document.getElementById("modal-chat-display");
+        const sendBtn = document.getElementById("modal-send-btn");
+    
+        const chatMessages = []; // store messages in memory
+    
+        function addMessage(text, type) {
+            const msgEl = document.createElement("div");
+            msgEl.classList.add(type); // "you" or "friend"
+            msgEl.textContent = text;
+            chatDisplay.appendChild(msgEl);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    
+            chatMessages.push({ text, type });
+        }
+    
+        sendBtn.addEventListener("click", () => {
+            const text = input.value.trim();
+            if (!text) return;
+    
+            addMessage(text, "you"); // show message
+            input.value = "";
+    
+            // Example: simulate a "friend reply" locally after 1s
+            setTimeout(() => {
+                addMessage("Echo: " + text, "friend");
+            }, 1000);
+        });
+    });    
 });

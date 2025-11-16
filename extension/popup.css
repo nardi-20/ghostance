@@ -393,3 +393,88 @@ body {
 }
 
 /* --- END HAUNT MODAL SPECIFIC STYLES --- */
+
+/* ---- STARTING MESSAGING STYLES ---- */
+#modal-chat-display {
+    width: 100%;
+    min-height: 150px;
+    max-height: 200px;
+    margin-bottom: 8px;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    color: #f0f0f0;
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    font-size: 14px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 2px solid #ff6600;
+    border-radius: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+#modal-chat-input {
+    width: 70%;
+    min-height: 30px;
+    padding: 8px;
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    font-size: 14px;
+    color: #f0f0f0;
+    background: rgba(0,0,0,0.2);
+    border: 2px solid #ff6600;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#modal-chat-input::placeholder {
+    color: #ccc;
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    font-style: italic;
+}
+
+#modal-send-btn {
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    font-size: 14px;
+    color: #f0f0f0;
+    background: #333;
+    border: 2px solid #ff6600;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#modal-send-btn:hover {
+    background: #444;
+}
+
+#modal-chat-display div {
+    display: inline-block; /* Allows width to grow with content */
+    max-width: 70%; /* Limit width so text wraps nicely */
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    word-wrap: break-word;
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* Messages user sends: align right, orange */
+#modal-chat-display .you {
+    background-color: #ff6600;
+    color: #fff;
+    align-self: flex-end; /* push to right */
+    text-align: right;
+}
+
+/* Messages from friend: align left, gray */
+#modal-chat-display .friend {
+    background-color: #555;
+    color: #ddd;
+    align-self: flex-start; /* push to left */
+    text-align: left;
+}
+
+/* ---- ENDING MESSAGING STYLES ---- */
