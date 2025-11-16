@@ -114,7 +114,7 @@ body {
 .modal {
     width: 90%;
     max-width: 260px;
-    max-height: 500px;
+    height: auto;
     padding: 20px;
     background: rgba(43, 43, 43, 0.95);
     border: 2px solid #ff6600;

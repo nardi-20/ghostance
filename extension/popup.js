@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    // --- 4. Dressing Room / Ghost Outfit Logic ---
+    // --- 4. Dressing Room / Ghost Outfit Logic ---  
     // (Your code - preserved)
     let currentHat = null;
     let currentGlasses = null;
@@ -164,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 7. Gemini Gift Generation Logic ---
-
     // Trying to make sure the script clears after each prompt
     const giftsBtn = document.getElementById('gifts');
     const giftsModal = document.getElementById('gifts-modal');
