@@ -43,17 +43,24 @@
         </button>
     </div>
 
-    <div id="mailbox-modal" class="modal mailbox-background hidden">
-        <div class="modal-content">
-            <h3> Mailbox </h3>
-            <div id="modal-chat-display"
-                style="height:150px; overflow-y:auto; border:1px solid #ccc; padding:5px; margin-bottom:8px;"></div>
-            <input type="text" id="modal-chat-input" placeholder="Type a message..." style="width:70%;">
-            <button id="modal-send-btn">Send</button>
-            <button class="close-btn">Close</button>
-        </div>
-    </div>
+  <div id="mailbox-modal" class="modal mailbox-background hidden">
+    <div class="modal-content">
+        <h3> Mailbox </h3>
 
+        <!-- Simple single-line input + send button -->
+        <input
+            type="text"
+            id="modal-chat-input"
+            placeholder="Type a message..."
+            style="width:70%; margin-bottom: 8px;"
+        >
+        <button id="modal-send-btn">Send</button>
+
+        <button class="close-btn">Close</button>
+    </div>
+</div>
+
+    <!-- Dressing Station -->
     <div id="dressing-modal" class="modal dressing-background hidden">
         <div class="modal-content">
             <h3>Dressing Station</h3>
@@ -78,6 +85,7 @@
         </div>
     </div>
 
+    <!-- Gifts / Gemini modal -->
     <div id="gifts-modal" class="modal gifts-background hidden">
         <div class="modal-content">
             <h3> Generate a Gift </h3>
@@ -92,6 +100,7 @@
         </div>
     </div>
 
+    <!-- Haunt modal -->
     <div id="haunt-modal" class="modal haunt-background hidden">
         <div class="modal-content">
             <h3> Haunt </h3>
@@ -100,6 +109,8 @@
             <button class="close-btn"> Close </button>
         </div>
     </div>
+
+    <!-- Your teammate's ghost wake/sleep helpers -->
     <script src="Functions/Home/ghost-state.js"></script>
     <script src="popup.js"></script>
 </body>

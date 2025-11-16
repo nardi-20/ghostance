@@ -1,8 +1,44 @@
+console.log("[JustABooAway] content script loaded on", window.location.href);
+
+// =====================
+//  Assets (GIFs)
+// =====================
+
+const GHOST_IDLE_URL = chrome.runtime.getURL("icons/GhostIdle.gif");
+const GHOST_DIE_URL  = chrome.runtime.getURL("icons/GhostDie.gif");
+const GHOST_FLY_URL  = chrome.runtime.getURL("icons/GhostFly.gif");
+
+// =====================
+//  Animation state
+// =====================
+
+// When *this* user last clicked their ghost
+let lastLocalPetTime = 0;
+// How close (ms) the two clicks must be to count as "together"
+const SPECIAL_WINDOW_MS = 1500;
+// Approx length of GhostDie.gif in ms (tweak if needed)
+const DIE_DURATION_MS = 1000;
+
+let idleAnimationId = null;
+let idleStartTime = null;
+
+// current effect: null | "wiggle" | "special"
+let effect = null;
+let effectStartTime = 0;
+
+// prevents new ghost / new effects while death animation is playing
+let isDying = false;
+
+// Chat bubble over the page
+let chatBubbleEl = null;
+let chatBubbleTimeoutId = null;
+
 // =====================
 //  Config
 // =====================
 
-const SERVER_URL = "ws://66.42.80.193:3000";
+// Use secure WebSocket through Caddy
+const SERVER_URL = "wss://justabooaway.us/ws";
 
 let socket = null;
 let ghost = null;
@@ -19,9 +55,11 @@ function connectSocket(pairCode) {
     }
 
     // Avoid duplicate connections
-    if (socket &&
+    if (
+        socket &&
         (socket.readyState === WebSocket.OPEN ||
-            socket.readyState === WebSocket.CONNECTING)) {
+            socket.readyState === WebSocket.CONNECTING)
+    ) {
         return;
     }
 
@@ -32,10 +70,12 @@ function connectSocket(pairCode) {
 
     socket.addEventListener("open", () => {
         console.log(`[JustABooAway] WS OPEN - joining room ${pairCode}`);
-        socket.send(JSON.stringify({
-            type: "join-room",
-            code: pairCode
-        }));
+        socket.send(
+            JSON.stringify({
+                type: "join-room",
+                code: pairCode,
+            })
+        );
     });
 
     socket.addEventListener("message", (event) => {
@@ -47,31 +87,58 @@ function connectSocket(pairCode) {
             return;
         }
 
+        // ---- Pet / haunt actions ----
         if (data.type === "pet-action") {
             if (data.action === "show-ghost") {
-                addGhost(false);      // UI only
-            } else if (data.action === "hide-ghost") {
-                removeGhost(false);   // UI only
+                addGhost(false); // UI only (no re-broadcast)
 
-                // 💡 --- ADDED THIS SECTION ---
-                // 3. We receive a haunt from our friend
+            } else if (data.action === "hide-ghost") {
+                removeGhost(false); // UI only (play death animation)
+
+            } else if (data.action === "pet-click") {
+                // Partner clicked their ghost
+                if (!ghost) {
+                    // If our ghost isn't visible yet, show it (no re-broadcast)
+                    addGhost(false);
+                }
+
+                const now = performance.now();
+                const remoteTime =
+                    data.payload && typeof data.payload.time === "number"
+                        ? data.payload.time
+                        : now;
+
+                const delta = Math.abs(remoteTime - lastLocalPetTime);
+                console.log("[JustABooAway] Remote click delta ms:", delta);
+
+                const isSpecial = delta <= SPECIAL_WINDOW_MS;
+                triggerEffect(isSpecial ? "special" : "wiggle");
+
             } else if (data.action === "haunt-action") {
-                console.log("[JustABooAway] BOO! We've been haunted!");
-                // Tell the popup (if open) and service-worker (if closed)
+                // Friend triggered a haunt
+                console.log("[JustABooAway] BOO! We've been haunted (from WebSocket)!");
                 chrome.runtime.sendMessage({ action: "receiveHaunt" });
             }
-            // 💡 --- END OF ADDED SECTION ---
-
         }
 
-        // Adding messaging function
+        // ---- Chat messages ----
         if (data.type === "chat-message") {
             console.log("[JustABooAway] Received chat-message:", data.payload);
 
+            // Forward to popup so it shows in mailbox chat UI
             chrome.runtime.sendMessage({
                 action: "receiveMessage",
-                message: data.payload
+                message: data.payload,
             });
+
+            // Show as bubble over our page ghost
+            const text =
+                data.payload && typeof data.payload.text === "string"
+                    ? data.payload.text
+                    : "";
+            if (text) {
+                showChatBubble(text, /*fromRemote=*/ true);
+            }
         }
     });
 
@@ -89,30 +156,6 @@ function connectSocket(pairCode) {
     });
 }
 
-// ===========================
-//  Messaging between users
-// ===========================
-
-// NEW: Send a chat message to a paired user
-function sendMessageToPair(messageText) {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-        console.warn("[JustABooAway] Cannot send message, socket not open");
-        return;
-    }
-
-    const msg = {
-        type: "chat-message",
-        payload: {
-            text: messageText,
-            timestamp: Date.now()
-        }
-    };
-    socket.send(JSON.stringify(msg));
-    console.log("[JustABooAway] Sent chat-message:", msg);
-}
-// END NEW continue existing pet-action / haunt-action handling
-
-
 function sendPetAction(action, payload = {}) {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
         console.warn("[JustABooAway] Cannot send pet action, socket not open");
@@ -122,32 +165,230 @@ function sendPetAction(action, payload = {}) {
     const msg = {
         type: "pet-action",
         action,
-        payload
+        payload,
     };
     socket.send(JSON.stringify(msg));
     console.log("[JustABooAway] Sent pet-action:", msg);
 }
 
+// ===========================
+//  Chat messaging helpers
+// ===========================
+function sendChatMessage(messageText) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.warn("[JustABooAway] Cannot send message, socket not open");
+        return;
+    }
+
+    const msg = {
+        type: "chat-message",
+        payload: {
+            text: messageText,
+            timestamp: Date.now(),
+        },
+    };
+    socket.send(JSON.stringify(msg));
+    console.log("[JustABooAway] Sent chat-message:", msg);
+
+    // IMPORTANT: Do NOT show a bubble locally.
+    // Only the partner (remote side) will show the bubble when they receive it.
+}
+
+
 // =====================
-//  Ghost overlay
+//  Idle + effect animation
+// =====================
+
+function startIdleAnimation() {
+    if (!ghost) return;
+    if (idleAnimationId !== null) return; // already running
+
+    idleStartTime = performance.now();
+
+    function frame(timestamp) {
+        if (!ghost || isDying) {
+            idleAnimationId = null;
+            return;
+        }
+
+        const t = (timestamp - idleStartTime) / 1000; // seconds
+        // Idle vertical float: up/down by ~10px over ~3s period
+        const idleOffsetY = Math.sin((2 * Math.PI) * (t / 3)) * 10;
+
+        let offsetX = 0;
+        let scale = 1;
+        let rotate = 0;
+        let finalOffsetY = idleOffsetY;
+
+        if (effect === "wiggle") {
+            const elapsed = timestamp - effectStartTime;
+            const duration = 600; // ms
+            if (elapsed >= duration) {
+                effect = null;
+            } else {
+                const phase = (elapsed / duration) * 2 * Math.PI;
+                offsetX = Math.sin(phase) * 20;
+                scale = 1.05;
+            }
+        } else if (effect === "special") {
+            const elapsed = timestamp - effectStartTime;
+            const duration = 1000; // ms
+            if (elapsed >= duration) {
+                effect = null;
+            } else {
+                const e = elapsed / duration; // 0 → 1
+                const pathPhase = e * Math.PI;
+                offsetX = Math.sin(pathPhase) * 30;
+                const extraY = -15 * Math.sin(pathPhase);
+                finalOffsetY = idleOffsetY + extraY;
+
+                scale = 1 + 0.4 * Math.sin(e * Math.PI);
+                rotate = 10 * Math.sin(e * 2 * Math.PI);
+            }
+        }
+
+        // If effect ended, ensure sprite goes back to idle
+        if (effect === null && !isDying && ghost.src !== GHOST_IDLE_URL) {
+            ghost.src = GHOST_IDLE_URL;
+        }
+
+        // Apply transform combining idle + effect
+        ghost.style.transform =
+            `translate(${offsetX}px, ${finalOffsetY}px) ` +
+            `scale(${scale}) rotate(${rotate}deg)`;
+
+        idleAnimationId = requestAnimationFrame(frame);
+    }
+
+    idleAnimationId = requestAnimationFrame(frame);
+}
+
+function stopIdleAnimation() {
+    if (idleAnimationId !== null) {
+        cancelAnimationFrame(idleAnimationId);
+        idleAnimationId = null;
+    }
+    if (ghost) {
+        ghost.style.transform = "";
+    }
+}
+
+/**
+ * Start a new effect if none is currently running.
+ * kind: "wiggle" | "special"
+ * Both use the flying sprite; special just has more dramatic motion.
+ */
+function triggerEffect(kind) {
+    if (!ghost || isDying) return;
+    if (kind !== "wiggle" && kind !== "special") return;
+
+    // If an effect is already running, ignore new triggers
+    if (effect !== null) {
+        console.log("[JustABooAway] Effect already running, ignoring new", kind);
+        return;
+    }
+
+    effect = kind;
+    effectStartTime = performance.now();
+
+    // Switch to flying sprite while effect is active
+    if (ghost.src !== GHOST_FLY_URL) {
+        ghost.src = GHOST_FLY_URL;
+    }
+}
+
+// =====================
+//  Chat bubble over page ghost
+// =====================
+
+function showChatBubble(text, fromRemote) {
+    if (!ghost) {
+        // Ensure our ghost exists (local only, no broadcast)
+        addGhost(false);
+    }
+    if (!ghost) return;
+
+    // Remove any previous bubble
+    if (chatBubbleEl) {
+        chatBubbleEl.remove();
+        chatBubbleEl = null;
+    }
+    if (chatBubbleTimeoutId) {
+        clearTimeout(chatBubbleTimeoutId);
+        chatBubbleTimeoutId = null;
+    }
+
+    const bubble = document.createElement("div");
+    bubble.id = "justaboo-chat-bubble";
+    bubble.textContent = text;
+
+    // Style: simple speech bubble near ghost
+    Object.assign(bubble.style, {
+        position: "fixed",
+        bottom: "150px",        // above the ghost (which is at bottom: 20px)
+        right: "20px",
+        maxWidth: "240px",
+        padding: "8px 10px",
+        background: "rgba(0, 0, 0, 0.8)",
+        color: "#fff",
+        borderRadius: "10px",
+        border: "1px solid #ff6600",
+        fontFamily: '"Creepster", Arial, sans-serif',
+        fontSize: "13px",
+        zIndex: "1000000000",
+        pointerEvents: "none",
+        boxShadow: "0 0 10px rgba(0,0,0,0.8)",
+        whiteSpace: "pre-wrap",
+    });
+
+    document.body.appendChild(bubble);
+    chatBubbleEl = bubble;
+
+    // Auto-hide after a few seconds
+    chatBubbleTimeoutId = setTimeout(() => {
+        if (chatBubbleEl) {
+            chatBubbleEl.remove();
+            chatBubbleEl = null;
+        }
+        chatBubbleTimeoutId = null;
+    }, 5000);
+}
+
+// =====================
+//  Ghost overlay creation/removal
 // =====================
 
 function addGhost(broadcast = true) {
-    if (ghost) return;
+    if (ghost || isDying) return;
 
     ghost = document.createElement("img");
     ghost.id = "ghost-overlay";
-    ghost.src = chrome.runtime.getURL("icons/ghost.png");
+    ghost.src = GHOST_IDLE_URL; // idle GIF
 
     ghost.style.position = "fixed";
     ghost.style.bottom = "20px";
     ghost.style.right = "20px";
     ghost.style.width = "120px";
     ghost.style.zIndex = "999999999";
-    ghost.style.pointerEvents = "none";
+    ghost.style.pointerEvents = "auto"; // allow clicks
+
+    // Click on ghost on the page → flying effect + notify partner
+    ghost.addEventListener("click", () => {
+        if (isDying) return;
+
+        const now = performance.now();
+        lastLocalPetTime = now;
+
+        console.log("[JustABooAway] Local ghost click at", now);
+        triggerEffect("wiggle"); // normal flying effect
+
+        sendPetAction("pet-click", { time: now });
+    });
 
     document.body.appendChild(ghost);
     console.log("[JustABooAway] Ghost added");
+
+    startIdleAnimation(); // start idle float
 
     if (broadcast) {
         sendPetAction("show-ghost");
@@ -155,11 +396,29 @@ function addGhost(broadcast = true) {
 }
 
 function removeGhost(broadcast = true) {
-    if (!ghost) return;
+    if (!ghost || isDying) return;
 
-    ghost.remove();
-    ghost = null;
-    console.log("[JustABooAway] Ghost removed");
+    isDying = true;
+
+    // Stop JS idle/effect animation so the death GIF is clean
+    stopIdleAnimation();
+    effect = null;
+
+    // Swap to death GIF and stop taking clicks
+    ghost.src = GHOST_DIE_URL;
+    ghost.style.pointerEvents = "none";
+    ghost.style.transform = "";
+
+    const dyingGhost = ghost;
+
+    setTimeout(() => {
+        if (ghost === dyingGhost) {
+            dyingGhost.remove();
+            ghost = null;
+            console.log("[JustABooAway] Ghost removed after death animation");
+        }
+        isDying = false;
+    }, DIE_DURATION_MS);
 
     if (broadcast) {
         sendPetAction("hide-ghost");
@@ -167,20 +426,21 @@ function removeGhost(broadcast = true) {
 }
 
 // =====================
-//  Popup → content messages
+//  Messages from popup / background
 // =====================
 
 chrome.runtime.onMessage.addListener((msg) => {
     console.log("[JustABooAway] onMessage:", msg);
 
     if (msg.action === "toggleGhost") {
+        // This path still broadcasts show/hide to partner
         if (ghost) {
             removeGhost(true);
         } else {
             addGhost(true);
         }
+
     } else if (msg.action === "setPairCode") {
-        // popup tells us the code changed
         currentPairCode = msg.code || null;
         if (socket) {
             socket.close();
@@ -190,17 +450,22 @@ chrome.runtime.onMessage.addListener((msg) => {
             connectSocket(currentPairCode);
         }
 
-        // 💡 --- ADDED THIS SECTION ---
-        // 1. Popup told us to "Start Haunting"
     } else if (msg.action === "startHaunting") {
         console.log("[JustABooAway] Sending haunt-action to friend...");
-        // 2. We send the new "haunt-action" message over the WebSocket
         sendPetAction("haunt-action");
-    }
-    // 💡 --- END OF ADDED SECTION ---
-    // --- NEW: Send chat message from popup ---
-    else if (msg.action === "sendMessage" && msg.text) {
-        sendMessageToPair(msg.text);
+
+    } else if ((msg.action === "sendMessage" || msg.action === "sendChat") && msg.text) {
+        // Mailbox modal sending a chat → go over WebSocket
+        sendChatMessage(msg.text);
+
+    } else if (msg.action === "ensureLocalGhost") {
+        // Tombstone controls only THIS user's page ghost, no broadcast
+        const visible = !!msg.visible;
+        if (visible) {
+            if (!ghost) addGhost(false);
+        } else {
+            if (ghost) removeGhost(false);
+        }
     }
 });
 
@@ -212,6 +477,7 @@ chrome.storage.local.get(["pairCode"], (res) => {
     const code = res.pairCode || null;
     currentPairCode = code;
     if (code) {
+        console.log("[JustABooAway] Found stored pairing code:", code);
         connectSocket(code);
     } else {
         console.log("[JustABooAway] No pairing code stored yet");

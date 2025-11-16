@@ -12,41 +12,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const savePairCodeBtn = document.getElementById("save-code");
 
     // --- 2. New Haunt Function ---
-    /**
-     * This function makes the ghost get "scared" by the haunt.
-     * IMPORTANT: You must copy "hgl042h.jpg" into your "icons/" folder.
-     * A local path like "/Users/lillian..." will not work.
-     */
+    // This is from Version 2
     function getHaunted() {
         if (!ghostImg) return;
-
-        // 1. Store the current image
         const originalSrc = ghostImg.src;
-
-        // 2. Change to scary image & shake
-        // Make sure "hgl042h.jpg" is inside your "icons" folder!
         ghostImg.src = "icons/hgl042h.jpg";
-        ghostImg.classList.add("shake"); // Your CSS file already has .shake
+        ghostImg.classList.add("shake"); 
 
-        // 3. After the shake (0.5s from your CSS), remove class and revert image
         setTimeout(() => {
             ghostImg.classList.remove("shake");
-            ghostImg.src = originalSrc; // Revert to what it was
-        }, 500); // 0.5s = 500ms
+            ghostImg.src = originalSrc;
+        }, 500); 
 
-        // 4. Clear the storage flag
         chrome.storage.local.set({ haunted: false }, () => {
             console.log("Haunt state cleared");
         });
     }
 
     // --- 2.5. Check for Haunt on Load ---
-    // Check if we were haunted while the popup was closed
+    // This is from Version 2
     chrome.storage.local.get("haunted", (result) => {
         if (result.haunted) {
-            // We were haunted!
             getHaunted();
-            // The getHaunted() function will clear the flag.
         }
     });
 
@@ -54,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeAllModals() {
         document.querySelectorAll(ALL_MODAL_SELECTORS)
             .forEach(m => {
-                // Only hide elements that are actual modals
                 if (!m.classList.contains('ghost-container') && !m.id.includes('popup-content')) {
                     m.classList.add("hidden");
                 }
@@ -68,14 +54,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setupModalToggle(buttonId, modalId) {
         const button = document.getElementById(buttonId);
-        if (!button) return; // Guard against missing elements
+        if (!button) return; 
 
         button.addEventListener("click", () => {
             const modal = document.getElementById(modalId);
             if (!modal) return;
-
             const isAlreadyOpen = !modal.classList.contains("hidden");
-
             if (isAlreadyOpen) {
                 modal.classList.add("hidden");
             } else {
@@ -90,12 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
         gravestone.addEventListener("click", () => {
             const isGhostVisible = !ghostVisContainer.classList.contains("hidden");
             if (!isGhostVisible) {
-                // WAKE UP
                 if (typeof wake === 'function') {
                     wake(ghostVisContainer, ghostImg, menu);
                 }
             } else {
-                // GO TO SLEEP
                 if (typeof sleep === 'function') {
                     sleep(ghostVisContainer, menu);
                 }
@@ -123,10 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateGhostImage() {
         let parts = ["ghost"];
-
         if (currentHat) parts.push(currentHat);
         if (currentGlasses) parts.push(currentGlasses);
-
         ghostImg.src = "icons/" + parts.join("+") + ".png";
     }
 
@@ -134,7 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
         button.addEventListener("click", () => {
             const type = button.dataset.type;
             const id = button.dataset.id;
-
             if (type === "hat") {
                 currentHat = (currentHat === id ? null : id);
             }
@@ -150,34 +129,27 @@ document.addEventListener("DOMContentLoaded", () => {
     setupModalToggle("dressing", "dressing-modal");
     // "gifts" toggle is handled in section 9
 
-    // Logic for the "Haunt" ICON (from the menu)
+    // Logic for the "Haunt" ICON (from Version 2)
     const hauntButton = document.getElementById("haunt");
     if (hauntButton) {
         hauntButton.addEventListener("click", () => {
             const modal = document.getElementById("haunt-modal");
             if (!modal) return;
-
             const isAlreadyOpen = !modal.classList.contains("hidden");
-
             if (isAlreadyOpen) {
-                // If modal is open, close it and reset ghost
                 modal.classList.add("hidden");
                 updateGhostImage(); // Reset the image
             } else {
-                // If modal is closed, open it and show scary ghost
                 openModal("haunt-modal");
-                ghostImg.src = "icons/ghost+scary.png"; // Make ghost scary
+                ghostImg.src = "icons/ghost+scary.png"; 
             }
         });
     }
 
-    // Logic for the "Start Haunting" BUTTON (inside the modal)
+    // Logic for the "Start Haunting" BUTTON (from Version 2)
     if (startHauntBtn) {
         startHauntBtn.addEventListener("click", () => {
-
-            // 💡 UPDATED: Send message to background to broadcast the haunt
-            // This tells your background.js script to send the haunt
-            // to your paired friend.
+            // UPDATED: Send message to background
             chrome.runtime.sendMessage({ action: "sendHaunt" }, () => {
                 if (chrome.runtime.lastError) {
                     console.error("Could not send haunt: ", chrome.runtime.lastError.message);
@@ -186,14 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log("Haunt message sent to background.");
                 }
             });
-
-            // Close the modal
             closeAllModals();
-            // Note: We don't reset the image, so the icon stays scary
         });
     }
 
-    // Close buttons (now reset the ghost image)
+    // Close buttons (from Version 2, with reset)
     document.querySelectorAll(".close-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             closeAllModals();
@@ -213,13 +182,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     Object.keys(sounds).forEach(id => {
         const btn = document.getElementById(id);
-        if (!btn) return; // Guard against missing elements
+        if (!btn) return; 
 
         btn.addEventListener("mouseenter", () => {
             sounds[id].currentTime = 0;
             sounds[id].play();
         });
-
         btn.addEventListener("mouseleave", () => {
             sounds[id].pause();
             sounds[id].currentTime = 0;
@@ -227,12 +195,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 9. Gemini Gift Generation Logic ---
+    // This is from Version 2
     const giftInput = document.getElementById("gift-input");
     const giftOutput = document.getElementById("gift-output");
     const generateButton = document.getElementById("generate-btn");
     const giftsBtn = document.getElementById('gifts');
 
-    // Custom logic for opening the gifts modal
     if (giftsBtn) {
         giftsBtn.addEventListener('click', () => {
             openModal('gifts-modal');
@@ -252,7 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Check storage for existing gift on load
     chrome.storage.local.get(["giftStatus", "lastGift"], (result) => {
         if (result.giftStatus) {
             displayGift(result.giftStatus, result.lastGift);
@@ -261,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Listen for changes to the gift
     chrome.storage.onChanged.addListener((changes, namespace) => {
         if (namespace === "local" && changes.giftStatus) {
             chrome.storage.local.get(["giftStatus", "lastGift"], (result) => {
@@ -285,25 +251,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // --- 10. Pairing Code Logic ---
+    // This is from Version 2
     if (pairCodeInput && savePairCodeBtn) {
-        // Prefill input with saved code
         chrome.storage.local.get(["pairCode"], (res) => {
             if (res.pairCode) {
                 pairCodeInput.value = res.pairCode;
-                console.log("[JustABooAway] Loaded stored pairCode:", res.pairCode);
             }
         })
-
-        // Save code and tell the content script to reconnect
         savePairCodeBtn.addEventListener("click", () => {
             const code = pairCodeInput.value.trim();
-            if (!code) {
-                console.log("[JustABooAway] Empty code, not saving");
-                return;
-            }
+            if (!code) return;
             chrome.storage.local.set({ pairCode: code }, () => {
                 console.log("[JustABooAway] Saved pairing code:", code);
-                // Tell the service worker to reconnect with this new code
                 chrome.runtime.sendMessage({
                     action: "setPairCode",
                     code: code
@@ -313,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- 11. Listen for Haunt from Background Script ---
-    // This listens for the message from your background.js
+    // This is from Version 2
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.action === "receiveHaunt") {
             console.log("BOO! We've been haunted!");
@@ -321,39 +280,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- 12. Listen for Messaging from
-    const input = document.getElementById("modal-chat-input");
-    const chatDisplay = document.getElementById("modal-chat-display");
+    // --- 12. Messaging (SIMPLE) ---
+    // This is from Version 1, as you requested
+    const chatInput = document.getElementById("modal-chat-input");
     const sendBtn = document.getElementById("modal-send-btn");
 
-    const chatMessages = []; // store messages in memory
-
-    function addMessage(text, type) {
-        const msgEl = document.createElement("div");
-        msgEl.classList.add(type); // "you" or "friend"
-        msgEl.textContent = text;
-        chatDisplay.appendChild(msgEl);
-        chatDisplay.scrollTop = chatDisplay.scrollHeight;
-
-        chatMessages.push({ text, type });
-    }
-
-    if (sendBtn) {
+    if (sendBtn && chatInput) {
         sendBtn.addEventListener("click", () => {
-            const text = input.value.trim();
+            const text = chatInput.value.trim();
             if (!text) return;
 
-            addMessage(text, "you"); // show locally
-            input.value = "";
+            chatInput.value = "";
 
-            // Send to content script
+            // Send to active tab → content.js → WebSocket → partner
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                 const tab = tabs[0];
                 if (!tab) return;
 
                 chrome.tabs.sendMessage(tab.id, {
-                    action: "sendMessage",
-                    text: text
+                    action: "sendChat", // This is the old action name
+                    text,
                 });
             });
         });
