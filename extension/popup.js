@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- 1. Variable Declarations & Selectors ---
     const gravestone = document.getElementById("gravestone");
-    const ghostContainer = document.getElementById("ghost-container"); 
+    const ghostContainer = document.getElementById("ghost-container");
     const ghostVisContainer = document.getElementById("popup-content"); // Visibility container
     const ghostImg = document.getElementById("ghost"); // Image element
     const menu = document.getElementById("menu");
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function openModal(modalId) {
-        closeAllModals(); 
+        closeAllModals();
         document.getElementById(modalId).classList.remove("hidden");
     }
 
@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function setupModalToggle(buttonId, modalId) {
         document.getElementById(buttonId).addEventListener("click", () => {
             const modal = document.getElementById(modalId);
-            
+
             // Check if THIS specific modal is currently open (NOT hidden)
-            const isAlreadyOpen = !modal.classList.contains("hidden"); 
+            const isAlreadyOpen = !modal.classList.contains("hidden");
 
             if (isAlreadyOpen) {
                 // If it's open, CLOSE it.
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateGhostImage();
         });
     });
-    
+
     // --- 5. Menu Button Toggle Logic (FIXED) ---
     // Now use the setupModalToggle function for all menu buttons
     setupModalToggle("mailbox", "mailbox-modal");
@@ -94,4 +94,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Close buttons
     document.querySelectorAll(".close-btn").forEach(btn => btn.addEventListener("click", closeAllModals));
+
+    // --- 6. Playing sounds when hovering over menu options
+    // Create audio objects
+    const sounds = {
+        mailbox: new Audio("sounds/mail.mp3"),
+        dressing: new Audio("sounds/dresser.mp3"),
+        gifts: new Audio("sounds/gift.mp3"),
+        haunt: new Audio("sounds/haunt.mp3"),
+        gravestone: new Audio("sounds/gravestone.mp3"), 
+        ghost: new Audio("sounds/ghost.mp3")
+    };
+
+    // Play sound on hover, stop on leave
+    Object.keys(sounds).forEach(id => {
+        const btn = document.getElementById(id);
+
+        btn.addEventListener("mouseenter", () => {
+            sounds[id].currentTime = 0; // restart if already playing
+            sounds[id].play();
+        });
+
+        btn.addEventListener("mouseleave", () => {
+            sounds[id].pause();
+            sounds[id].currentTime = 0; // reset to start
+        });
+    });
 });
