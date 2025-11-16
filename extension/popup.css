@@ -123,6 +123,7 @@ body {
     text-align: center;
     margin-bottom: 10px;
     animation: modal-pop 0.3s ease-out;
+    overflow: visible;
 }
 
 .modal.hidden {
