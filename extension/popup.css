@@ -1,21 +1,23 @@
-/* Basic reset */
+/* === BODY & GENERAL THEME === */
 body {
     margin: 0;
     padding: 10px;
-    font-family: "Arial", sans-serif;
-    background-color: #1b1b1b;
-    color: white;
+    font-family: "Creepster", cursive, Arial, sans-serif;
+    background: linear-gradient(180deg, #1b1b1b, #2a1b3d);
+    color: #f0f0f0;
     width: 300px;
-    height: 400px;
+    height: auto;
+    min-height: 400px;
     position: relative;
+    overflow: visible;
 }
 
-/* Hide elements by default */
+/* === HIDDEN CLASS === */
 .hidden {
     display: none;
 }
 
-/* Gravestone styling */
+/* === GRAVESTONE === */
 #gravestone-container {
     text-align: center;
     margin-bottom: 10px;
@@ -24,42 +26,59 @@ body {
 
 #gravestone {
     width: 60px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    filter: drop-shadow(0 0 10px #666);
+    transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* Gravestone click animation */
+#gravestone:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 20px #ff6600);
+}
+
+/* Shake animation */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
 .shake {
     animation: shake 0.5s;
 }
 
-.glow {
-    box-shadow: 0 0 15px 5px #ffffffaa;
-}
-
-/* Ghost styling */
+/* === GHOST === */
 #ghost-container {
     text-align: center;
-    margin-bottom: 10px; /* space between ghost and menu */
+    margin-bottom: 10px;
 }
 
 #ghost {
     width: 80px;
-    transition: transform 0.5s ease, opacity 0.5s ease;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 15px #fff);
+    transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
     position: relative;
 }
 
-/* Floating ghost animation */
-.float {
-    animation: float 3s ease-in-out infinite;
-}
-
+/* Floating and glowing animation */
 @keyframes float {
-    0% { transform: translateY(0); }
+    0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-15px); }
-    100% { transform: translateY(0); }
 }
 
-/* Menu buttons */
+@keyframes ghost-glow {
+    0%, 100% { filter: drop-shadow(0 0 15px #fff); }
+    50% { filter: drop-shadow(0 0 25px #ffcc00); }
+}
+
+.float {
+    animation: float 3s ease-in-out infinite, ghost-glow 3s ease-in-out infinite;
+}
+
+/* === MENU BUTTONS === */
 #menu {
     display: flex;
     justify-content: space-around;
@@ -69,86 +88,83 @@ body {
 }
 
 .menu-btn {
-    background: none;
-    border: none;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid #ff6600;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    padding: 5px;
     margin-bottom: 5px;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .menu-btn img {
     width: 50px;
-    transition: transform 0.2s ease;
 }
 
-.menu-btn:hover img {
-    transform: scale(1.2);
+.menu-btn:hover {
+    transform: scale(1.2) rotate(-5deg);
+    box-shadow: 0 0 15px #ff6600, 0 0 30px #ffcc00;
 }
 
-/* Modals */
-.modal,.mailbox-background, .dressing-background, .haunt-background, .gifts-background  {
-    width: 260px;
-    background: #2b2b2b;
-    border: 2px solid #fff;
-    padding: 10px;
-    border-radius: 10px;
+/* === MODALS === */
+.modal {
+    width: 90%;
+    max-width: 260px;
+    max-height: 500px;
+    padding: 20px;
+    background: rgba(43, 43, 43, 0.95);
+    border: 2px solid #ff6600;
+    box-shadow: 0 0 20px #ff6600;
+    border-radius: 15px;
     text-align: center;
     margin-bottom: 10px;
+    animation: modal-pop 0.3s ease-out;
 }
 
-/* --- Specific Button Backgrounds --- */
-
-.mailbox-background {
-    background-color: #5d92ff; /* Blue for Mailbox */
-}
-
-.dressing-background {
-    background-color: #ff5db5; /* Pink for Dressing */
-}
-
-.haunt-background{
-    background-color: #ffda5d; /* Yellow/Gold for Gifts */
-}
-
-.gifts-background{
-    background-color: #c95dff; /* Purple for Haunt */
-}
-
-.modal.hidden,.mailbox-background.hidden,.dressing-background.hidden,
-    .haunt-background.hidden,.gifts-background.hidden{
+.modal.hidden {
     display: none;
 }
 
-/* Close button */
+@keyframes modal-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Close buttons */
 .close-btn {
-    margin-top: 10px;
-    padding: 5px 10px;
+    margin: 15px auto 0 auto; 
+    padding: 7px 14px;
     background: #444;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
+    display: block;
+    transition: background 0.2s ease;
 }
 
 .close-btn:hover {
     background: #666;
 }
 
-/* Container for dressing buttons */
+/* === DRESSING STATION BUTTONS === */
 #dressing-options {
-    display: flex;           /* flex layout */
-    flex-direction: row;     /* horizontal row */
-    justify-content: center; /* centers the buttons */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
-    gap: 10px;               /* space between buttons */
-    flex-wrap: wrap;         /* wrap to next line if too many buttons */
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-/* Dressing buttons */
 .dress-item {
     width: 57px;
     height: 57px;
-    background: none;
+    background: rgba(0,0,0,0.3);
     border: 2px solid #555;
     border-radius: 5px;
     cursor: pointer;
@@ -156,7 +172,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dress-item img {
@@ -167,14 +183,7 @@ body {
 
 .dress-item:hover {
     transform: scale(1.1);
-    border-color: #fff;
+    border-color: #ff6600;
+    box-shadow: 0 0 10px #ff6600;
 }
-/* Shake animation keyframes */
-@keyframes shake {
-    0% { transform: translateX(0); }
-    20% { transform: translateX(-5px); }
-    40% { transform: translateX(5px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(5px); }
-    100% { transform: translateX(0); }
-}
+
