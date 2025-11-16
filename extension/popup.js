@@ -322,34 +322,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 12. Listen for Messaging from
-    document.addEventListener("DOMContentLoaded", () => {
-        const input = document.getElementById("modal-chat-input");
-        const chatDisplay = document.getElementById("modal-chat-display");
-        const sendBtn = document.getElementById("modal-send-btn");
-    
-        const chatMessages = []; // store messages in memory
-    
-        function addMessage(text, type) {
-            const msgEl = document.createElement("div");
-            msgEl.classList.add(type); // "you" or "friend"
-            msgEl.textContent = text;
-            chatDisplay.appendChild(msgEl);
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-    
-            chatMessages.push({ text, type });
-        }
-    
+    const input = document.getElementById("modal-chat-input");
+    const chatDisplay = document.getElementById("modal-chat-display");
+    const sendBtn = document.getElementById("modal-send-btn");
+
+    const chatMessages = []; // store messages in memory
+
+    function addMessage(text, type) {
+        const msgEl = document.createElement("div");
+        msgEl.classList.add(type); // "you" or "friend"
+        msgEl.textContent = text;
+        chatDisplay.appendChild(msgEl);
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+        chatMessages.push({ text, type });
+    }
+
+    if (sendBtn) {
         sendBtn.addEventListener("click", () => {
             const text = input.value.trim();
             if (!text) return;
-    
-            addMessage(text, "you"); // show message
+
+            addMessage(text, "you"); // show locally
             input.value = "";
-    
-            // Example: simulate a "friend reply" locally after 1s
-            setTimeout(() => {
-                addMessage("Echo: " + text, "friend");
-            }, 1000);
+
+            // Send to content script
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tab = tabs[0];
+                if (!tab) return;
+
+                chrome.tabs.sendMessage(tab.id, {
+                    action: "sendMessage",
+                    text: text
+                });
+            });
         });
-    });    
+    }
 });
